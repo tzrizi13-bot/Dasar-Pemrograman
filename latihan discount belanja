@@ -1,0 +1,16 @@
+bayar = int(input("Masukkan total belanjaan Anda: "))
+if bayar >= 1000000:
+    diskon = 0.25
+    print("diskon yang anda dapatkan adalah 25%")
+elif bayar >= 500000:
+    diskon = 0.10
+    print("diskon yang anda dapatkan adalah 10%")
+else:
+    diskon = 0
+    print("yahaha gak dapat diskon kau dek dek")
+    
+total_bayar = bayar - (bayar * diskon)
+print("="*35)
+print("total bayar seluruhnya adalah: ", total_bayar)
+print("terima kasih sudah berbelanja di toko kami")
+print("="*35)
