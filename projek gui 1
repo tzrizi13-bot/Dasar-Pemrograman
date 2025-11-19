@@ -1,0 +1,138 @@
+import tkinter as tk
+from tkinter import messagebox
+from openpyxl import Workbook, load_workbook
+import os
+
+file_excel = "data35.xlsx"
+
+if not os.path.exists(file_excel):
+    wb = Workbook()
+    ws = wb.active
+    ws.append(["Nama", "Kelas"])
+    wb.save(file_excel)
+
+# ------------------ FUNGSI ------------------
+
+def simpan_data():
+    nama = entry_nama.get()
+    kelas = entry_kelas.get()
+
+    if not nama or not kelas:
+        messagebox.showwarning("Peringatan", "Nama dan Kelas harus diisi!")
+        return
+
+    wb = load_workbook(file_excel)
+    ws = wb.active
+    ws.append([nama, kelas])
+    wb.save(file_excel)
+
+    entry_nama.delete(0, tk.END)
+    entry_kelas.delete(0, tk.END)
+    messagebox.showinfo("Sukses", "Data berhasil disimpan!")
+
+def lihat_data():
+    wb = load_workbook(file_excel)
+    ws = wb.active
+
+    data = ""
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        data += f"Nama: {row[0]}, Kelas: {row[1]}\n"
+
+    if data:
+        messagebox.showinfo("Data Siswa", data)
+    else:
+        messagebox.showinfo("Data Siswa", "Belum ada data.")
+
+def hapus_data_dalam_file():
+    konfirmasi = messagebox.askyesno("Konfirmasi", "Yakin ingin hapus semua data?")
+    if konfirmasi:
+        try:
+            wb = load_workbook(file_excel)
+            ws = wb.active
+            ws.delete_rows(2, ws.max_row)
+            wb.save(file_excel)
+            messagebox.showinfo("Sukses", "Semua data berhasil dihapus.")
+        except PermissionError:
+            messagebox.showerror("Gagal", "File sedang dibuka atau tidak bisa diakses.")
+
+def hapus_data_terpilih():
+    wb = load_workbook(file_excel)
+    ws = wb.active
+    data = list(ws.iter_rows(min_row=2, values_only=True))
+
+    if not data:
+        messagebox.showinfo("Info", "Tidak ada data untuk dihapus.")
+        return
+
+    window = tk.Toplevel(root)
+    window.title("Hapus Data")
+    window.configure(bg="#fefefe")
+
+    tk.Label(window, text="Pilih data untuk dihapus:", font=("Segoe UI", 12, "bold"), bg="#fefefe").pack(pady=10)
+
+    listbox = tk.Listbox(window, width=50, font=("Segoe UI", 11))
+    listbox.pack(padx=10, pady=5)
+
+    for i, row in enumerate(data):
+        listbox.insert(tk.END, f"{i+1}. Nama: {row[0]}, Kelas: {row[1]}")
+
+    def hapus():
+        selected = listbox.curselection()
+        if selected:
+            index = selected[0] + 2
+            ws.delete_rows(index)
+            wb.save(file_excel)
+            messagebox.showinfo("Sukses", "Data berhasil dihapus.")
+            window.destroy()
+        else:
+            messagebox.showwarning("Peringatan", "Pilih data terlebih dahulu.")
+
+    tk.Button(window, text="Hapus", command=hapus, bg="#e74c3c", fg="white", font=("Segoe UI", 11, "bold")).pack(pady=10)
+
+# ------------------ GUI UTAMA ------------------
+
+root = tk.Tk()
+root.title("📘 Data Siswa SMK 4 PYK")
+root.geometry("500x400")
+root.configure(bg="#08613d")
+
+judul = tk.Label(root, text="Form Data Siswa", font=("Segoe UI", 20, "bold"), bg="#cecece", fg="#2c3e50")
+judul.pack(pady=20)
+
+form_frame = tk.Frame(root, bg="#175546")
+form_frame.pack(pady=10)
+
+tk.Label(form_frame, text="Nama:", font=("Segoe UI", 12), bg="#f0f8ff").grid(row=0, column=0, padx=10, pady=5, sticky="e")
+entry_nama = tk.Entry(form_frame, font=("Segoe UI", 12), width=30)
+entry_nama.grid(row=0, column=1, pady=5)
+
+tk.Label(form_frame, text="Kelas:", font=("Segoe UI", 12), bg="#f0f8ff").grid(row=1, column=0, padx=10, pady=5, sticky="e")
+entry_kelas = tk.Entry(form_frame, font=("Segoe UI", 12), width=30)
+entry_kelas.grid(row=1, column=1, pady=5)
+
+button_frame = tk.Frame(root, bg="#f0f8ff")
+button_frame.pack(pady=20)
+
+def hover_effect(btn, color_hover, color_normal):
+    def on_enter(e): btn.config(bg=color_hover)
+    def on_leave(e): btn.config(bg=color_normal)
+    btn.bind("<Enter>", on_enter)
+    btn.bind("<Leave>", on_leave)
+
+btn_simpan = tk.Button(button_frame, text="💾 Simpan", command=simpan_data, bg="#3498db", fg="white", font=("Segoe UI", 11, "bold"), width=18)
+btn_simpan.grid(row=0, column=0, padx=10, pady=5)
+hover_effect(btn_simpan, "#2980b9", "#3498db")
+
+btn_lihat = tk.Button(button_frame, text="📋 Lihat Data", command=lihat_data, bg="#2ecc71", fg="white", font=("Segoe UI", 11, "bold"), width=18)
+btn_lihat.grid(row=0, column=1, padx=10, pady=5)
+hover_effect(btn_lihat, "#27ae60", "#2ecc71")
+
+btn_hapus_isi = tk.Button(button_frame, text="🧹 Hapus Semua Data", command=hapus_data_dalam_file, bg="#f39c12", fg="white", font=("Segoe UI", 11, "bold"), width=18)
+btn_hapus_isi.grid(row=1, column=0, padx=10, pady=5)
+hover_effect(btn_hapus_isi, "#d68910", "#f39c12")
+
+btn_hapus_terpilih = tk.Button(button_frame, text="❌ Hapus Data Terpilih", command=hapus_data_terpilih, bg="#e74c3c", fg="white", font=("Segoe UI", 11, "bold"), width=18)
+btn_hapus_terpilih.grid(row=1, column=1, padx=10, pady=5)
+hover_effect(btn_hapus_terpilih, "#c0392b", "#e74c3c")
+
+root.mainloop()
